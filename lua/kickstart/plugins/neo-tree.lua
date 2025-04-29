@@ -11,7 +11,7 @@ return {
   },
   cmd = 'Neotree',
   keys = {
-    { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
+    { '\\', ':Neotree toggle<CR>', desc = 'NeoTree toggle', silent = true },
   },
   config = function()
     require('neo-tree').setup {
@@ -26,6 +26,7 @@ return {
           enabled = true,
           leave_dirs_open = false,
         },
+        hijack_netrw_behavior = 'open_current',
       },
       buffers = { follow_current_file = { enable = true } },
     }
