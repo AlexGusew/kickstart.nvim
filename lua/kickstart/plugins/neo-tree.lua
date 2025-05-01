@@ -26,9 +26,20 @@ return {
           enabled = true,
           leave_dirs_open = false,
         },
-        hijack_netrw_behavior = 'open_current',
+        hijack_netrw_behavior = 'open_default',
       },
       buffers = { follow_current_file = { enable = true } },
+      sources = { "filesystem", "buffers", "git_status" },
+      source_selector = {
+        winbar = true,
+        statusline = false,
+        show_scrolled_off_parent_node = false,
+        sources = {
+          { source = "filesystem", display_name = " 󰉓 Files " },
+          { source = "buffers", display_name = " 󰈚 Buffers " },
+          { source = "git_status", display_name = " 󰊢 Git " },
+        },
+      },
     }
   end,
   opts = {
