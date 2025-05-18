@@ -868,12 +868,23 @@ require('lazy').setup({
     },
   },
   {
-    "nyoom-engineering/oxocarbon.nvim",
+    "navarasu/onedark.nvim",
+    priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
-      vim.opt.background = "dark" -- set this to dark or light
-      vim.cmd("colorscheme oxocarbon")
-    end,
+      require('onedark').setup {
+        style = 'deep'
+      }
+      -- Enable theme
+      require('onedark').load()
+    end
   },
+  -- {
+  --   "nyoom-engineering/oxocarbon.nvim",
+  --   config = function()
+  --     vim.opt.background = "dark" -- set this to dark or light
+  --     vim.cmd("colorscheme oxocarbon")
+  --   end,
+  -- },
   -- { -- You can easily change to a different colorscheme.
   --   -- Change the name of the colorscheme plugin below, and then
   --   -- change the command in the config to whatever the name of that colorscheme is.
@@ -950,9 +961,9 @@ require('lazy').setup({
     config = function()
       require('lualine').setup({
         options = {
-          theme = 'modus-vivendi',
-          section_separators = { left = '', right = '' },
-          component_separators = { left = '', right = '' }
+          theme = 'catppuccin',
+          section_separators = '',
+          component_separators = ''
         },
       })
     end
@@ -960,21 +971,6 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-    },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
