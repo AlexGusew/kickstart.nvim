@@ -872,7 +872,8 @@ require('lazy').setup({
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
       require('onedark').setup {
-        style = 'deep'
+        style = 'deep',
+        transparent = true,
       }
       -- Enable theme
       require('onedark').load()
@@ -1005,6 +1006,7 @@ require('lazy').setup({
     config = function()
       require('toggleterm').setup {
         open_mapping = [[<c-\>]],
+        direction = 'float',
       }
       local Terminal = require('toggleterm.terminal').Terminal
       local lazygit = Terminal:new { direction = 'float', cmd = 'lazygit', hidden = true }

@@ -37,6 +37,29 @@ end
 return {
   ---@type LazySpec
   {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    ---@type snacks.Config
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      bigfile = { enabled = true },
+      dashboard = { enabled = true },
+      explorer = { enabled = false },
+      indent = { enabled = false },
+      input = { enabled = false },
+      picker = { enabled = false },
+      notifier = { enabled = false },
+      quickfile = { enabled = true },
+      scope = { enabled = false },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = false },
+      words = { enabled = false },
+    },
+  },
+  {
     "mikavilpas/yazi.nvim",
     event = "VeryLazy",
     dependencies = {
@@ -119,26 +142,26 @@ return {
       }
     end,
   },
-  {
-    "folke/persistence.nvim",
-    lazy = false,
-    config = function()
-      require("persistence").setup()
-
-      vim.api.nvim_create_autocmd("VimEnter", {
-        callback = function()
-          if vim.fn.argc() == 0 then
-            require("persistence").load()
-            -- 🔁 Trigger filetype and syntax manually
-            vim.defer_fn(function()
-              vim.cmd("silent! filetype detect")
-              vim.cmd("silent! syntax enable")
-            end, 100)
-          end
-        end,
-      })
-    end,
-  },
+  -- {
+  --   "folke/persistence.nvim",
+  --   lazy = false,
+  --   config = function()
+  --     require("persistence").setup()
+  --
+  --     vim.api.nvim_create_autocmd("VimEnter", {
+  --       callback = function()
+  --         if vim.fn.argc() == 0 then
+  --           require("persistence").load()
+  --           -- 🔁 Trigger filetype and syntax manually
+  --           vim.defer_fn(function()
+  --             vim.cmd("silent! filetype detect")
+  --             vim.cmd("silent! syntax enable")
+  --           end, 100)
+  --         end
+  --       end,
+  --     })
+  --   end,
+  -- },
   {
     "sindrets/diffview.nvim",
     dependencies = {
