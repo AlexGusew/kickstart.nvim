@@ -48,14 +48,18 @@ return {
     "folke/snacks.nvim",
     priority = 1000,
     lazy = false,
-    ---@type snacks.Config
+
+    -- Correct: keymap is set *after* the plugin is initialized via opts
     opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
       bigfile = { enabled = true },
       dashboard = { enabled = true },
-      explorer = { enabled = false },
+      explorer = {
+        enabled = true,
+        hidden = true,      -- Show hidden files like .gitignore
+        ignored = true,     -- Show files ignored by .gitignore
+        follow_file = true, -- Automatically follow the current file
+        tree = true,        -- Display as a tree structure
+      },
       indent = { enabled = false },
       input = { enabled = false },
       picker = { enabled = true },
@@ -66,6 +70,16 @@ return {
       statuscolumn = { enabled = false },
       words = { enabled = false },
     },
+
+    config = function(_, opts)
+      -- Initialize the plugin with provided opts
+      require("snacks").setup(opts)
+
+      -- Set keymap safely *after* setup
+      vim.keymap.set("n", "<leader>e", function()
+        require("snacks").explorer()
+      end, { desc = "Toggle [E]xplorer" })
+    end,
   },
   {
     "mikavilpas/yazi.nvim",
