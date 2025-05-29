@@ -35,6 +35,14 @@ function EditFromLazygit(file_path)
 end
 
 return {
+  -- {
+  --   "ahmedkhalf/project.nvim",
+  --   config = function()
+  --     require("project_nvim").setup {}
+  --     require('telescope').load_extension('projects')
+  --     require 'telescope'.extensions.projects.projects {}
+  --   end
+  -- },
   ---@type LazySpec
   {
     "folke/snacks.nvim",
@@ -50,8 +58,8 @@ return {
       explorer = { enabled = false },
       indent = { enabled = false },
       input = { enabled = false },
-      picker = { enabled = false },
-      notifier = { enabled = false },
+      picker = { enabled = true },
+      notifier = { enabled = true, top_down = false },
       quickfile = { enabled = true },
       scope = { enabled = false },
       scroll = { enabled = true },

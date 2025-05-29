@@ -962,7 +962,7 @@ require('lazy').setup({
     config = function()
       require('lualine').setup({
         options = {
-          theme = 'catppuccin',
+          theme = 'onedark',
           section_separators = '',
           component_separators = ''
         },
