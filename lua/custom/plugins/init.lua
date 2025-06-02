@@ -7,6 +7,7 @@ vim.opt.expandtab = true -- Use spaces instead of tabs
 
 vim.api.nvim_set_keymap('n', 'n', 'nzz', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'N', 'Nzz', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>tq', ':tabclose<CR>', { noremap = true, silent = true, desc = '[T]ab [Q]uit' })
 -- You can add your own plugins here or in other files in this directory!
 --  I promise not to create any merge conflicts in this directory :)
 --
@@ -14,6 +15,18 @@ vim.api.nvim_set_keymap('n', 'N', 'Nzz', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>tn', ':tabnew<CR>', { noremap = true, desc = '[T]ab [N]ew', silent = true })
 vim.api.nvim_set_keymap('n', '<leader>tt', ':tabnew | term<CR>',
   { noremap = true, desc = '[T]ab [T]erminal', silent = true })
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    vim.schedule(function()
+      local file = vim.fn.expand("%:p")
+      if vim.fn.filereadable(file) == 1 then
+        local path = vim.fn.fnamemodify(file, ":h")
+        vim.api.nvim_set_current_dir(path)
+      end
+    end)
+  end,
+})
 
 function EditLineFromLazygit(file_path, line)
   local path = vim.fn.expand("%:p")

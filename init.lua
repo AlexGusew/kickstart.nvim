@@ -936,7 +936,6 @@ require('lazy').setup({
       require('mini.git').setup()
       require('mini.diff').setup()
       require('mini.icons').setup()
-
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
@@ -1015,8 +1014,8 @@ require('lazy').setup({
         lazygit:toggle()
       end
 
-      vim.api.nvim_set_keymap('n', '<leader>tg', '<cmd>lua _lazygit_toggle()<CR>',
-        { desc = '[T]ab [G]it', noremap = true, silent = true })
+      vim.api.nvim_set_keymap('n', '<leader>gg', '<cmd>lua _lazygit_toggle()<CR>',
+        { desc = '[G]it [G]it', noremap = true, silent = true })
     end,
   },
 
