@@ -613,6 +613,13 @@ require('lazy').setup({
         end,
       })
 
+      -- Configure LSP hover to handle markdown properly
+      -- vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+      --   border = 'rounded',
+      --   -- Force markdown parsing
+      --   focus_id = 'textDocument/hover',
+      -- })
+
       -- Diagnostic Config
       -- See :help vim.diagnostic.Opts
       vim.diagnostic.config {
@@ -955,22 +962,33 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-  {
-    'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    config = function()
-      require('lualine').setup({
-        options = {
-          theme = 'onedark',
-          section_separators = '',
-          component_separators = ''
-        },
-      })
-    end
-  },
+  -- {
+  --   'nvim-lualine/lualine.nvim',
+  --   dependencies = { 'nvim-tree/nvim-web-devicons' },
+  --   config = function()
+  --     require('lualine').setup({
+  --       options = {
+  --         theme = 'onedark',
+  --         section_separators = '',
+  --         component_separators = ''
+  --       },
+  --     })
+  --   end
+  -- },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
+    config = function()
+      require('nvim-treesitter.configs').setup({
+        ensure_installed = {
+          "lua", "cpp", "c", "markdown", "markdown_inline"
+        },
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+      })
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
