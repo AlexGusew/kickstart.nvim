@@ -734,6 +734,17 @@ require('lazy').setup({
     'pmizio/typescript-tools.nvim',
     dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
     opts = {},
+    config = function()
+      require("typescript-tools").setup({
+        on_attach = function(client)
+          client.server_capabilities.documentFormattingProvider = false
+        end,
+        settings = {
+          expose_as_code_action = "all",
+          complete_function_calls = true,
+        }
+      })
+    end
   },
   { -- Autoformat
     'stevearc/conform.nvim',
@@ -745,37 +756,29 @@ require('lazy').setup({
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
-        mode = '',
+        mode = { 'n', 'v' },
         desc = '[F]ormat buffer',
       },
     },
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          return nil
-        else
-          return {
-            timeout_ms = 500,
-            lsp_format = 'fallback',
-          }
-        end
+        local ft = vim.bo[bufnr].filetype
+        local disabled = { c = true, cpp = true }
+        if disabled[ft] then return end
+        return { timeout_ms = 500, lsp_format = 'fallback' }
       end,
       formatters_by_ft = {
-        lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
-      },
-    },
-  },
+        lua = { "stylua" },
 
+        -- Run eslint_d fix first, then prettierd formatter
+        javascript = { "eslint_d", "prettierd" },
+        typescript = { "eslint_d", "prettierd" },
+        javascriptreact = { "eslint_d", "prettierd" },
+        typescriptreact = { "eslint_d", "prettierd" },
+      },
+    }
+  },
   { -- Autocompletion
     'saghen/blink.cmp',
     event = 'VimEnter',
@@ -932,7 +935,23 @@ require('lazy').setup({
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      require('mini.ai').setup {
+        n_lines = 500,
+        custom_textobjects = {
+          f = function()
+            return require('mini.ai').gen_spec.treesitter({
+              a = '@function.outer',
+              i = '@function.inner',
+            })
+          end,
+          m = function()
+            return require('mini.ai').gen_spec.treesitter({
+              a = '@method.outer',
+              i = '@method.inner',
+            })
+          end,
+        },
+      }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -962,30 +981,40 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-  -- {
-  --   'nvim-lualine/lualine.nvim',
-  --   dependencies = { 'nvim-tree/nvim-web-devicons' },
-  --   config = function()
-  --     require('lualine').setup({
-  --       options = {
-  --         theme = 'onedark',
-  --         section_separators = '',
-  --         component_separators = ''
-  --       },
-  --     })
-  --   end
-  -- },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('lualine').setup({
+        options = {
+          theme = 'onedark',
+          section_separators = '',
+          component_separators = ''
+        },
+      })
+    end
+  },
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    dependencies = 'nvim-treesitter/nvim-treesitter',
+  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup({
         ensure_installed = {
-          "lua", "cpp", "c", "markdown", "markdown_inline"
+          "lua", "cpp", "c", "markdown", "markdown_inline", "typescript", "javascript", "tsx"
         },
         highlight = {
           enable = true,
           additional_vim_regex_highlighting = false,
+        },
+        textobjects = {
+          select = {
+            enable = true,
+            lookahead = true,
+          },
         },
       })
     end,
@@ -1008,7 +1037,7 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps

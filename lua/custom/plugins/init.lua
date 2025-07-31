@@ -1,20 +1,23 @@
-vim.opt.verbose = 1 -- Log at level 1 (you can increase this value for more detailed logs)
-vim.opt.runtimepath:append("~/.local/state/nvim")
+-- vim.opt.verbose = 1 -- Log at level 1 (you can increase this value for more detailed logs)
+-- vim.opt.runtimepath:append("~/.local/state/nvim")
 
 vim.opt.tabstop = 2      -- Number of spaces for a tab
 vim.opt.shiftwidth = 2   -- Number of spaces for autoindent
 vim.opt.expandtab = true -- Use spaces instead of tabs
 
-vim.api.nvim_set_keymap('n', 'n', 'nzz', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', 'N', 'Nzz', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>tq', ':tabclose<CR>', { noremap = true, silent = true, desc = '[T]ab [Q]uit' })
--- You can add your own plugins here or in other files in this directory!
---  I promise not to create any merge conflicts in this directory :)
---
--- See the kickstart.nvim README for more information
-vim.api.nvim_set_keymap('n', '<leader>tn', ':tabnew<CR>', { noremap = true, desc = '[T]ab [N]ew', silent = true })
-vim.api.nvim_set_keymap('n', '<leader>tt', ':tabnew | term<CR>',
-  { noremap = true, desc = '[T]ab [T]erminal', silent = true })
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldlevel = 99
+
+-- vim.opt.shortmess:append("F")
+
+vim.keymap.set('n', 'n', 'nzz', { silent = true, desc = 'next search and center' })
+vim.keymap.set('n', 'N', 'Nzz', { silent = true, desc = 'previous search and center' })
+vim.keymap.set('n', '<leader>tq', ':tabclose<CR>', { silent = true, desc = '[T]ab [Q]uit' })
+vim.keymap.set('n', '<leader>tn', ':tabnew<CR>', { silent = true, desc = '[T]ab [N]ew' })
+vim.keymap.set('n', '<leader>tt', ':tabnew | term<CR>', { silent = true, desc = '[T]ab [T]erminal' })
+vim.keymap.set('n', '<leader>w', ':w<CR>', { noremap = true, silent = true })
+
 
 function EditLineFromLazygit(file_path, line)
   local path = vim.fn.expand("%:p")
@@ -44,6 +47,13 @@ return {
   --     require 'telescope'.extensions.projects.projects {}
   --   end
   -- },
+  -- {
+  --   'notjedi/nvim-rooter.lua',
+  --   opts = {
+  --     rooter_patterns = { '.git', 'package.json', 'tsconfig.json' },
+  --     manual = false, -- auto change cwd
+  --   },
+  -- },
   ---@type LazySpec
   {
     "folke/snacks.nvim",
@@ -53,7 +63,7 @@ return {
     -- Correct: keymap is set *after* the plugin is initialized via opts
     opts = {
       bigfile = { enabled = true },
-      dashboard = { enabled = true },
+      dashboard = { enabled = false },
       explorer = {
         auto_close = true,
         enabled = true,
@@ -61,20 +71,25 @@ return {
         ignored = true,     -- Show files ignored by .gitignore
         follow_file = true, -- Automatically follow the current file
         tree = true,        -- Display as a tree structure
+        watch = true,
       },
       indent = { enabled = false },
       input = { enabled = false },
-      picker = { enabled = true },
+      picker = {
+        enabled = true,
+        hidden = false,
+        ignored = false,
+      },
       notifier = { enabled = true, top_down = false },
       quickfile = { enabled = true },
       scope = { enabled = false },
       scroll = { enabled = true },
       statuscolumn = { enabled = false },
       words = { enabled = false },
-      image = {
-        enabled = true,
-        inline = true
-      }
+      -- image = {
+      --   enabled = true,
+      --   inline = true
+      -- }
     },
 
     config = function(_, opts)
@@ -196,9 +211,15 @@ return {
       "nvim-lua/plenary.nvim", -- required dependency
     },
     config = function()
-      -- optional: custom config
-      vim.keymap.set("n", "<leader>gd", ":DiffviewOpen<CR>", { desc = "Open Git Diff View" })
-      vim.keymap.set("n", "<leader>gD", ":DiffviewClose<CR>", { desc = "Close Git Diff View" })
+      -- toggle function
+      vim.keymap.set("n", "<leader>gd", function()
+        local view = require("diffview.lib").get_current_view()
+        if view then
+          vim.cmd("DiffviewClose")
+        else
+          vim.cmd("DiffviewOpen")
+        end
+      end, { desc = "Toggle Git Diff View" })
     end,
   },
   {
