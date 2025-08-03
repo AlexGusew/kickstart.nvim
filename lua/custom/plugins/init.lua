@@ -9,6 +9,8 @@ vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.foldlevel = 99
 
+vim.opt.swapfile = false
+
 -- vim.opt.shortmess:append("F")
 
 vim.keymap.set('n', 'n', 'nzz', { silent = true, desc = 'next search and center' })
@@ -55,53 +57,53 @@ return {
   --   },
   -- },
   ---@type LazySpec
-  {
-    "folke/snacks.nvim",
-    priority = 1000,
-    lazy = false,
-
-    -- Correct: keymap is set *after* the plugin is initialized via opts
-    opts = {
-      bigfile = { enabled = true },
-      dashboard = { enabled = false },
-      explorer = {
-        auto_close = true,
-        enabled = true,
-        hidden = true,      -- Show hidden files like .gitignore
-        ignored = true,     -- Show files ignored by .gitignore
-        follow_file = true, -- Automatically follow the current file
-        tree = true,        -- Display as a tree structure
-        watch = true,
-      },
-      indent = { enabled = false },
-      input = { enabled = false },
-      picker = {
-        enabled = true,
-        hidden = false,
-        ignored = false,
-      },
-      notifier = { enabled = true, top_down = false },
-      quickfile = { enabled = true },
-      scope = { enabled = false },
-      scroll = { enabled = true },
-      statuscolumn = { enabled = false },
-      words = { enabled = false },
-      -- image = {
-      --   enabled = true,
-      --   inline = true
-      -- }
-    },
-
-    config = function(_, opts)
-      -- Initialize the plugin with provided opts
-      require("snacks").setup(opts)
-
-      -- Set keymap safely *after* setup
-      vim.keymap.set("n", "<leader>e", function()
-        require("snacks").explorer()
-      end, { desc = "Toggle [E]xplorer" })
-    end,
-  },
+  -- {
+  --   "folke/snacks.nvim",
+  --   priority = 1000,
+  --   lazy = false,
+  --
+  --   -- Correct: keymap is set *after* the plugin is initialized via opts
+  --   opts = {
+  --     bigfile = { enabled = true },
+  --     dashboard = { enabled = false },
+  --     explorer = {
+  --       auto_close = true,
+  --       enabled = true,
+  --       hidden = true,      -- Show hidden files like .gitignore
+  --       ignored = true,     -- Show files ignored by .gitignore
+  --       follow_file = true, -- Automatically follow the current file
+  --       tree = true,        -- Display as a tree structure
+  --       watch = true,
+  --     },
+  --     indent = { enabled = false },
+  --     input = { enabled = false },
+  --     picker = {
+  --       enabled = true,
+  --       hidden = false,
+  --       ignored = false,
+  --     },
+  --     notifier = { enabled = true, top_down = false },
+  --     quickfile = { enabled = true },
+  --     scope = { enabled = false },
+  --     scroll = { enabled = true },
+  --     statuscolumn = { enabled = false },
+  --     words = { enabled = false },
+  --     -- image = {
+  --     --   enabled = true,
+  --     --   inline = true
+  --     -- }
+  --   },
+  --
+  --   config = function(_, opts)
+  --     -- Initialize the plugin with provided opts
+  --     require("snacks").setup(opts)
+  --
+  --     -- Set keymap safely *after* setup
+  --     vim.keymap.set("n", "<leader>e", function()
+  --       require("snacks").explorer()
+  --     end, { desc = "Toggle [E]xplorer" })
+  --   end,
+  -- },
   {
     "mikavilpas/yazi.nvim",
     event = "VeryLazy",

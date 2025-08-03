@@ -982,19 +982,6 @@ require('lazy').setup({
     end,
   },
   {
-    'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    config = function()
-      require('lualine').setup({
-        options = {
-          theme = 'onedark',
-          section_separators = '',
-          component_separators = ''
-        },
-      })
-    end
-  },
-  {
     'nvim-treesitter/nvim-treesitter-textobjects',
     dependencies = 'nvim-treesitter/nvim-treesitter',
   },
@@ -1046,25 +1033,25 @@ require('lazy').setup({
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   { import = 'custom.plugins' },
-  {
-    'akinsho/toggleterm.nvim',
-    version = '*',
-    config = function()
-      require('toggleterm').setup {
-        open_mapping = [[<c-\>]],
-        direction = 'float',
-      }
-      local Terminal = require('toggleterm.terminal').Terminal
-      local lazygit = Terminal:new { direction = 'float', cmd = 'lazygit', hidden = true }
-
-      function _lazygit_toggle()
-        lazygit:toggle()
-      end
-
-      vim.api.nvim_set_keymap('n', '<leader>gg', '<cmd>lua _lazygit_toggle()<CR>',
-        { desc = '[G]it [G]it', noremap = true, silent = true })
-    end,
-  },
+  -- {
+  --   'akinsho/toggleterm.nvim',
+  --   version = '*',
+  --   config = function()
+  --     require('toggleterm').setup {
+  --       open_mapping = [[<c-\>]],
+  --       direction = 'float',
+  --     }
+  --     local Terminal = require('toggleterm.terminal').Terminal
+  --     local lazygit = Terminal:new { direction = 'float', cmd = 'lazygit', hidden = true }
+  --
+  --     function _lazygit_toggle()
+  --       lazygit:toggle()
+  --     end
+  --
+  --     vim.api.nvim_set_keymap('n', '<leader>gg', '<cmd>lua _lazygit_toggle()<CR>',
+  --       { desc = '[G]it [G]it', noremap = true, silent = true })
+  --   end,
+  -- },
 
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
