@@ -5,7 +5,7 @@ return {
       enable = true,
       options = {
         section_separators = { '', '' },
-        component_separators = { '|', "|" },
+        component_separators = { '/', '/' },
         max_bufferline_percent = 80,
         show_tabs_always = true,
         show_devicons = true,

@@ -31,9 +31,10 @@ return {
     },
   },
   keys = {
-    { "<leader>s",  function() Snacks.scratch() end,          desc = "Toggle Scratch Buffer" },
-    { "<leader>S",  function() Snacks.scratch.select() end,   desc = "Select Scratch Buffer" },
+    -- { "<leader>s",  function() Snacks.scratch() end,          desc = "Toggle Scratch Buffer" },
+    -- { "<leader>S",  function() Snacks.scratch.select() end,   desc = "Select Scratch Buffer" },
     { "<c-/>",      function() Snacks.terminal() end,         desc = "Toggle Terminal" },
+    { "<c-/>",      function() Snacks.terminal() end,         desc = "Toggle Terminal",             mode = { 't' } },
     { "<leader>gB", function() Snacks.gitbrowse() end,        desc = "Git Browse",                  mode = { "n", "v" } },
     { "<leader>gb", function() Snacks.git.blame_line() end,   desc = "Git Blame Line" },
     { "<leader>gf", function() Snacks.lazygit.log_file() end, desc = "Lazygit Current File History" },
