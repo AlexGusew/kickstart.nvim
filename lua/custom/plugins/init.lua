@@ -39,6 +39,14 @@ function EditFromLazygit(file_path)
   end
 end
 
+vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
+  pattern = { '*.vs', '*.fs' },
+  callback = function()
+    -- Set the filetype to 'glsl' so syntax highlighting and LSP work
+    vim.bo.filetype = 'glsl'
+  end,
+})
+
 return {
   -- {
   --   "ahmedkhalf/project.nvim",
@@ -222,6 +230,9 @@ return {
         end
       end, { desc = 'Toggle Git Diff View' })
     end,
+  },
+  {
+    'tpope/vim-sensible',
   },
   -- {
   --   'folke/trouble.nvim',

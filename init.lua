@@ -693,6 +693,34 @@ require('lazy').setup({
             },
           },
         },
+        glsl_analyzer = {
+          -- The server executable is usually just 'glsl_analyzer'
+          cmd = { 'glsl_analyzer' },
+
+          -- Specify filetypes it should activate for
+          filetypes = { 'glsl', 'vert', 'frag', 'comp', 'geom', 'fs', 'vs' },
+
+          -- Optional: Define custom capabilities or handlers
+          on_attach = function(client, bufnr)
+            -- Enable format on save if the server supports it (glsl_analyzer may not)
+            -- if client.server_capabilities.documentFormattingProvider then
+            --     vim.api.nvim_create_autocmd("BufWritePre", {
+            --         buffer = bufnr,
+            --         callback = vim.lsp.buf.format,
+            --     })
+            -- end
+
+            -- Standard keybindings for LSP (gD, K, gd, etc.)
+            require('core.keymaps').lsp_keymaps(bufnr)
+          end,
+
+          -- Optional: Settings specific to glsl_analyzer (e.g., validation rules)
+          settings = {
+            glsl_analyzer = {
+              validate = true,
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
