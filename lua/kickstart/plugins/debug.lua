@@ -23,6 +23,9 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+
+    -- Inline virtual text for variables during debugging
+    'theHamsta/nvim-dap-virtual-text',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -76,6 +79,13 @@ return {
       end,
       desc = 'Debug: See last session result.',
     },
+    {
+      '<leader>?',
+      function()
+        require('dapui').eval(nil, { enter = true })
+      end,
+      desc = 'Debug: Eval under cursor',
+    },
   },
   config = function()
     local dap = require 'dap'
@@ -95,6 +105,7 @@ return {
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
         'delve',
+        'codelldb', -- C/C++/Rust debugger
       },
     }
 
@@ -136,6 +147,11 @@ return {
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
+    -- Setup inline virtual text for variables
+    require('nvim-dap-virtual-text').setup {
+      commented = true, -- prefix with comment string
+    }
+
     -- Install golang specific config
     require('dap-go').setup {
       delve = {
@@ -144,5 +160,62 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+
+    -- C/C++ configuration with codelldb
+    dap.adapters.codelldb = {
+      type = 'server',
+      port = '${port}',
+      executable = {
+        command = vim.fn.stdpath 'data' .. '/mason/bin/codelldb',
+        args = { '--port', '${port}' },
+      },
+    }
+
+    dap.configurations.cpp = {
+      {
+        name = 'Launch executable',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+      },
+      {
+        name = 'Launch raylib project',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          -- Common raylib build output locations
+          local possible_paths = {
+            vim.fn.getcwd() .. '/build/main',
+            vim.fn.getcwd() .. '/build/game',
+            vim.fn.getcwd() .. '/bin/main',
+            vim.fn.getcwd() .. '/bin/game',
+            vim.fn.getcwd() .. '/main',
+            vim.fn.getcwd() .. '/game',
+          }
+          for _, path in ipairs(possible_paths) do
+            if vim.fn.filereadable(path) == 1 then
+              return path
+            end
+          end
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+      },
+      {
+        name = 'Attach to process',
+        type = 'codelldb',
+        request = 'attach',
+        pid = require('dap.utils').pick_process,
+        cwd = '${workspaceFolder}',
+      },
+    }
+
+    -- Use the same config for C
+    dap.configurations.c = dap.configurations.cpp
   end,
 }

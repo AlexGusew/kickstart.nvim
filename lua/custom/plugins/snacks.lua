@@ -18,8 +18,8 @@ return {
     words = { enabled = true },
     picker = {
       enabled = true,
-      hidden = true,
-      ignored = true,
+      hidden = false,
+      ignored = false,
     },
   },
   keys = {
