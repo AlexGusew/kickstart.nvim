@@ -9,10 +9,17 @@ return {
     dashboard = { enabled = true },
     input = { enabled = true },
     quickfile = { enabled = true },
-    scroll = { enabled = true },
-    image = {
+    scroll = {
       enabled = true,
-      inline = true,
+      animate = {
+        duration = { step = 10, total = 150 }, -- Faster animation (default is ~250ms)
+        easing = "outQuad", -- Smooth but quick easing
+      },
+      spamming = 10, -- Reduce sensitivity to rapid scroll events
+    },
+    image = {
+      enabled = false,
+      inline = false,
     },
     statuscolumn = { enabled = true },
     words = { enabled = true },
