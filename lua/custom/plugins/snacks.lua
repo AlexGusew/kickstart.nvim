@@ -13,9 +13,9 @@ return {
       enabled = true,
       animate = {
         duration = { step = 10, total = 150 }, -- Faster animation (default is ~250ms)
-        easing = "outQuad", -- Smooth but quick easing
+        easing = 'outQuad',                    -- Smooth but quick easing
       },
-      spamming = 10, -- Reduce sensitivity to rapid scroll events
+      spamming = 10,                           -- Reduce sensitivity to rapid scroll events
     },
     image = {
       enabled = false,
@@ -27,6 +27,14 @@ return {
       enabled = true,
       hidden = false,
       ignored = false,
+      formatters = {
+        file = {
+          filename_first = true,
+        },
+      },
+      layout = {
+        preset = 'ivy',
+      },
     },
   },
   keys = {
