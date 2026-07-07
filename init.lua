@@ -100,6 +100,7 @@ vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.opt.number = true
+vim.opt.cmdheight = 2
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
@@ -109,6 +110,7 @@ vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
+vim.opt.expandtab = true
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -249,6 +251,7 @@ vim.pack.add {
   gh 'mikavilpas/yazi.nvim',
 
   -- LSP
+  gh 'folke/trouble.nvim',
   gh 'folke/lazydev.nvim',
   gh 'neovim/nvim-lspconfig',
   gh 'williamboman/mason.nvim',
@@ -283,9 +286,20 @@ vim.pack.add {
   -- Winbar
   gh 'Bekaboo/dropbar.nvim',
   gh 'nvim-telescope/telescope-fzf-native.nvim',
+  gh 'm4xshen/hardtime.nvim',
+  gh 'MunifTanjim/nui.nvim',
 }
 
 -- [[ Configure plugins ]]
+require('hardtime').setup {
+  restriction_mode = 'hint',
+  disabled_keys = {
+    ['<Up>'] = false,
+    ['<Down>'] = false,
+    ['<Left>'] = false,
+    ['<Right>'] = false,
+  },
+}
 
 -- [[ Colorscheme ]]
 require('onedark').setup { style = 'deep', transparent = true }
@@ -456,7 +470,11 @@ local clangd_opts = {
   },
 }
 local servers = {
-  pyright = {},
+  ruff = {
+    cmd = { 'ruff', 'server' },
+    filetypes = { 'python' },
+    root_markers = { 'pyproject.toml', 'ruff.toml', '.ruff.toml', '.git' },
+  },
   lua_ls = {
     settings = {
       Lua = {
@@ -488,7 +506,7 @@ for server_name, server_config in pairs(servers) do
   end
   vim.lsp.enable(server_name)
 end
-require('fidget').setup()
+require('fidget').setup {}
 
 -- [[ Treesitter ]]
 -- See also: https://github.com/nvim-treesitter/nvim-treesitter (main branch / v1 API)
@@ -550,14 +568,14 @@ vim.api.nvim_create_autocmd('FileType', {
 -- [[ mini.nvim ]]
 require('mini.ai').setup {
   n_lines = 500,
-  custom_textobjects = {
-    f = function()
-      return require('mini.ai').gen_spec.treesitter { a = '@function.outer', i = '@function.inner' }
-    end,
-    m = function()
-      return require('mini.ai').gen_spec.treesitter { a = '@method.outer', i = '@method.inner' }
-    end,
-  },
+  -- custom_textobjects = {
+  --   f = function()
+  --     return require('mini.ai').gen_spec.treesitter { a = '@function.outer', i = '@function.inner' }
+  --   end,
+  --   m = function()
+  --     return require('mini.ai').gen_spec.treesitter { a = '@method.outer', i = '@method.inner' }
+  --   end,
+  -- },
 }
 require('mini.surround').setup()
 require('mini.git').setup()

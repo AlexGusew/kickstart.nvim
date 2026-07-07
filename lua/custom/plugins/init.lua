@@ -55,6 +55,24 @@ vim.keymap.set({ 'n', 'v' }, '<leader>-', '<cmd>Yazi<cr>', { desc = 'Open yazi a
 vim.keymap.set('n', '<leader>cw', '<cmd>Yazi cwd<cr>', { desc = "Open the file manager in nvim's working directory" })
 vim.keymap.set('n', '<c-up>', '<cmd>Yazi toggle<cr>', { desc = 'Resume the last yazi session' })
 
+-- [[ trouble.nvim ]]
+require('trouble').setup {}
+vim.api.nvim_set_hl(0, 'TroubleNormal', { link = 'Normal' })
+vim.api.nvim_set_hl(0, 'TroubleNormalNC', { link = 'NormalNC' })
+vim.api.nvim_create_autocmd('ColorScheme', {
+  pattern = '*',
+  callback = function()
+    vim.api.nvim_set_hl(0, 'TroubleNormal', { link = 'Normal' })
+    vim.api.nvim_set_hl(0, 'TroubleNormalNC', { link = 'NormalNC' })
+  end,
+})
+vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<cr>', { desc = 'Diagnostics (Trouble)' })
+vim.keymap.set('n', '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', { desc = 'Buffer diagnostics (Trouble)' })
+vim.keymap.set('n', '<leader>cs', '<cmd>Trouble symbols toggle<cr>', { desc = '[S]ymbols (Trouble)' })
+vim.keymap.set('n', '<leader>cl', '<cmd>Trouble lsp toggle<cr>', { desc = '[L]SP (Trouble)' })
+vim.keymap.set('n', '<leader>xL', '<cmd>Trouble loclist toggle<cr>', { desc = 'Location list (Trouble)' })
+vim.keymap.set('n', '<leader>xQ', '<cmd>Trouble qflist toggle<cr>', { desc = 'Quickfix list (Trouble)' })
+
 -- [[ diffview ]]
 vim.keymap.set('n', '<leader>gd', function()
   local view = require('diffview.lib').get_current_view()
@@ -78,6 +96,8 @@ require('conform').setup {
   notify_on_error = false,
   formatters_by_ft = {
     lua = { 'stylua' },
+    c = { 'clang-format' },
+    cpp = { 'clang-format' },
     javascript = { 'prettier' },
     typescript = { 'prettier' },
     javascriptreact = { 'prettier' },
@@ -85,19 +105,19 @@ require('conform').setup {
     json = { 'prettier' },
     markdown = { 'prettier' },
     yaml = { 'prettier' },
+    python = {
+      'ruff_fix', -- ruff check --fix (auto-fixable lint errors)
+      'ruff_format', -- ruff format
+      'ruff_organize_imports',
+    },
   },
   format_on_save = function(bufnr)
-    local ft = vim.bo[bufnr].filetype
-    local disabled = { c = true, cpp = true }
-    if disabled[ft] then return end
     return { timeout_ms = 500, lsp_format = 'fallback' }
   end,
   formatters = {
     prettierd = {
       condition = function()
-        return vim.uv.fs_realpath '.prettierrc.js' ~= nil
-          or vim.uv.fs_realpath '.prettierrc.mjs' ~= nil
-          or vim.uv.fs_realpath '.prettierrc' ~= nil
+        return vim.uv.fs_realpath '.prettierrc.js' ~= nil or vim.uv.fs_realpath '.prettierrc.mjs' ~= nil or vim.uv.fs_realpath '.prettierrc' ~= nil
       end,
     },
   },
