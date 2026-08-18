@@ -26,7 +26,7 @@ require('snacks').setup {
 
 -- Top Pickers & Explorer
 vim.keymap.set('n', '<leader><space>', function()
-  Snacks.picker.smart()
+  Snacks.picker.smart { filter = { cwd = true } }
 end, { desc = 'Smart Find Files' })
 vim.keymap.set('n', '<leader>,', function()
   Snacks.picker.buffers()

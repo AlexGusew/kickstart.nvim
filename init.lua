@@ -100,7 +100,7 @@ vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.opt.number = true
-vim.opt.cmdheight = 2
+vim.opt.cmdheight = 1
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
@@ -286,24 +286,38 @@ vim.pack.add {
   -- Winbar
   gh 'Bekaboo/dropbar.nvim',
   gh 'nvim-telescope/telescope-fzf-native.nvim',
-  gh 'm4xshen/hardtime.nvim',
   gh 'MunifTanjim/nui.nvim',
 }
 
--- [[ Configure plugins ]]
-require('hardtime').setup {
-  restriction_mode = 'hint',
-  disabled_keys = {
-    ['<Up>'] = false,
-    ['<Down>'] = false,
-    ['<Left>'] = false,
-    ['<Right>'] = false,
-  },
-}
-
 -- [[ Colorscheme ]]
-require('onedark').setup { style = 'deep', transparent = true }
-require('onedark').load()
+-- Follows the desktop's light/dark toggle (~/.config/quickshell/theme-mode.txt,
+-- same "auto" -> gsettings fallback that hyprland.lua uses for the wallpaper).
+-- Resolved once at startup only; nvim has no push channel from Theme.qml, so
+-- :ThemeSync below exists to resync an already-open session by hand.
+local function resolve_theme_mode()
+  local f = io.open(vim.fn.expand '~/.config/quickshell/theme-mode.txt', 'r')
+  local mode = f and f:read 'l' or 'auto'
+  if f then
+    f:close()
+  end
+  mode = (mode or 'auto'):gsub('%s+', '')
+  if mode == 'light' or mode == 'dark' then
+    return mode
+  end
+  local scheme = vim.fn.system 'gsettings get org.gnome.desktop.interface color-scheme'
+  return scheme:find 'dark' and 'dark' or 'light'
+end
+
+local function apply_theme()
+  require('onedark').setup {
+    style = resolve_theme_mode() == 'light' and 'light' or 'deep',
+    transparent = true,
+  }
+  require('onedark').load()
+end
+
+apply_theme()
+vim.api.nvim_create_user_command('ThemeSync', apply_theme, {})
 
 -- [[ Snacks ]] (load early; many plugins integrate with it)
 require 'custom.plugins.snacks'
@@ -414,7 +428,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 -- [[ Native completion ]] (Neovim 0.12 built-in, replaces blink.cmp)
-vim.opt.completeopt = 'menu,menuone,noselect,popup'
+vim.opt.completeopt = 'menu,menuone,noselect,popup,fuzzy'
+vim.opt.pumwidth = 30
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('native-lsp-completion', { clear = true }),
   callback = function(args)
