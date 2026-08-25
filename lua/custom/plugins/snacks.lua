@@ -13,7 +13,11 @@ require('snacks').setup {
     spamming = 10,
   },
   image = { enabled = false, inline = false },
-  statuscolumn = { enabled = true },
+  statuscolumn = {
+    enabled = true,
+    left = { 'mark', 'sign' },
+    right = { 'fold', 'git' },
+  },
   words = { enabled = true },
   picker = {
     enabled = true,

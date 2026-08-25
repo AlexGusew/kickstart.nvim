@@ -1,14 +1,41 @@
 -- Adds git related signs to the gutter, as well as utilities for managing changes
 require('gitsigns').setup {
-  signs = {
-    add = { text = '│' },
-    change = { text = '│' },
-    delete = { text = '_' },
-    topdelete = { text = '‾' },
-    changedelete = { text = '~' },
+  signs                        = {
+    add          = { text = '▎' },
+    change       = { text = '▎' },
+    delete       = { text = '' },
+    topdelete    = { text = '' },
+    changedelete = { text = '▎' },
+    untracked    = { text = '▎' },
   },
-  numhl = true,
-  on_attach = function(bufnr)
+  signs_staged                 = {
+    add          = { text = '▎' },
+    change       = { text = '▎' },
+    delete       = { text = '' },
+    topdelete    = { text = '' },
+    changedelete = { text = '▎' },
+  },
+  signs_staged_enable          = true,
+  attach_to_untracked          = true,
+  numhl                        = false,
+  linehl                       = false,
+  word_diff                    = false,
+  current_line_blame           = true,
+  current_line_blame_opts      = {
+    virt_text = true,
+    virt_text_pos = 'eol',
+    delay = 600,
+    ignore_whitespace = false,
+  },
+  current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> · <summary>',
+  preview_config               = {
+    border = 'rounded',
+    style = 'minimal',
+    relative = 'cursor',
+    row = 0,
+    col = 1,
+  },
+  on_attach                    = function(bufnr)
     local gitsigns = require 'gitsigns'
 
     local function map(mode, l, r, opts)
@@ -35,12 +62,15 @@ require('gitsigns').setup {
     end, { desc = 'Jump to previous git [c]hange' })
 
     -- Actions
-    map('v', '<leader>hs', function() gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' } end, { desc = 'git [s]tage hunk' })
-    map('v', '<leader>hr', function() gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' } end, { desc = 'git [r]eset hunk' })
+    map('v', '<leader>hs', function() gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' } end,
+      { desc = 'git [s]tage hunk' })
+    map('v', '<leader>hr', function() gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' } end,
+      { desc = 'git [r]eset hunk' })
     map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'git [s]tage hunk' })
     map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'git [r]eset hunk' })
     map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'git [S]tage buffer' })
     map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'git [R]eset buffer' })
+    map('n', '<leader>hu', gitsigns.undo_stage_hunk, { desc = 'git [u]ndo stage hunk' })
     map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'git [p]review hunk' })
     map('n', '<leader>hi', gitsigns.preview_hunk_inline, { desc = 'git preview hunk [i]nline' })
     map('n', '<leader>hb', function() gitsigns.blame_line { full = true } end, { desc = 'git [b]lame line' })
@@ -51,6 +81,7 @@ require('gitsigns').setup {
     -- Toggles
     map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git show [b]lame line' })
     map('n', '<leader>tw', gitsigns.toggle_word_diff, { desc = '[T]oggle git [w]ord diff' })
+    map('n', '<leader>tl', gitsigns.toggle_linehl, { desc = '[T]oggle git line [h]ighlight' })
     -- Text object
     map({ 'o', 'x' }, 'ih', gitsigns.select_hunk)
   end,

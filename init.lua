@@ -84,6 +84,11 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+-- Disable unused providers to suppress checkhealth warnings
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -130,7 +135,7 @@ vim.opt.undofile = true
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
--- Keep signcolumn on by default
+-- Signs rendered inside line number column, avoids duplicate native signcolumn
 vim.opt.signcolumn = 'yes'
 
 -- Decrease update time
@@ -228,7 +233,7 @@ end
 
 vim.pack.add {
   -- Core
-  gh 'tpope/vim-sleuth', -- Detect tabstop/shiftwidth automatically
+  gh 'tpope/vim-sleuth',   -- Detect tabstop/shiftwidth automatically
   gh 'tpope/vim-sensible', -- Sensible defaults
   gh 'nvim-lua/plenary.nvim',
 
@@ -277,6 +282,12 @@ vim.pack.add {
   gh 'leoluz/nvim-dap-go',
   gh 'theHamsta/nvim-dap-virtual-text',
 
+  -- Session
+  gh 'rmagatti/auto-session',
+
+  -- Completion
+  { src = gh 'saghen/blink.cmp',                version = 'v1.10.2' },
+
   -- Editor
   gh 'windwp/nvim-autopairs',
   gh 'lukas-reineke/indent-blankline.nvim',
@@ -294,24 +305,11 @@ vim.pack.add {
 -- same "auto" -> gsettings fallback that hyprland.lua uses for the wallpaper).
 -- Resolved once at startup only; nvim has no push channel from Theme.qml, so
 -- :ThemeSync below exists to resync an already-open session by hand.
-local function resolve_theme_mode()
-  local f = io.open(vim.fn.expand '~/.config/quickshell/theme-mode.txt', 'r')
-  local mode = f and f:read 'l' or 'auto'
-  if f then
-    f:close()
-  end
-  mode = (mode or 'auto'):gsub('%s+', '')
-  if mode == 'light' or mode == 'dark' then
-    return mode
-  end
-  local scheme = vim.fn.system 'gsettings get org.gnome.desktop.interface color-scheme'
-  return scheme:find 'dark' and 'dark' or 'light'
-end
 
 local function apply_theme()
   require('onedark').setup {
-    style = resolve_theme_mode() == 'light' and 'light' or 'deep',
-    transparent = true,
+    style = 'deep',
+    transparent = false,
   }
   require('onedark').load()
 end
@@ -423,19 +421,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
       map('<leader>th', function()
         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
       end, '[T]oggle Inlay [H]ints')
-    end
-  end,
-})
-
--- [[ Native completion ]] (Neovim 0.12 built-in, replaces blink.cmp)
-vim.opt.completeopt = 'menu,menuone,noselect,popup,fuzzy'
-vim.opt.pumwidth = 30
-vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('native-lsp-completion', { clear = true }),
-  callback = function(args)
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-    if client and client:supports_method 'textDocument/completion' then
-      vim.lsp.completion.enable(true, args.data.client_id, args.buf, { autotrigger = true })
     end
   end,
 })
@@ -580,17 +565,83 @@ vim.api.nvim_create_autocmd('FileType', {
   end,
 })
 
+-- [[ nvim-treesitter-textobjects ]]
+require('nvim-treesitter-textobjects').setup {
+  select = { lookahead = true },
+  move   = { set_jumps = true },
+}
+
+local ts_select       = require 'nvim-treesitter-textobjects.select'
+local ts_move         = require 'nvim-treesitter-textobjects.move'
+local ts_swap         = require 'nvim-treesitter-textobjects.swap'
+
+local textobj_keymaps = {
+  ['af'] = '@function.outer',
+  ['if'] = '@function.inner',
+  ['ac'] = '@class.outer',
+  ['ic'] = '@class.inner',
+  ['aa'] = '@parameter.outer',
+  ['ia'] = '@parameter.inner',
+  ['ai'] = '@conditional.outer',
+  ['ii'] = '@conditional.inner',
+  ['al'] = '@loop.outer',
+  ['il'] = '@loop.inner',
+  ['ax'] = '@call.outer',
+  ['ix'] = '@call.inner',
+  ['aB'] = '@block.outer',
+  ['iB'] = '@block.inner',
+}
+for key, query in pairs(textobj_keymaps) do
+  vim.keymap.set({ 'x', 'o' }, key, function()
+    ts_select.select_textobject(query, 'textobjects')
+  end, { desc = 'Textobject ' .. query })
+end
+
+-- Move: ]f [f ]c [c etc.
+local move_keymaps = {
+  { key = ']f', fn = ts_move.goto_next_start,     query = '@function.outer',    desc = 'Next function start' },
+  { key = ']F', fn = ts_move.goto_next_end,       query = '@function.outer',    desc = 'Next function end' },
+  { key = '[f', fn = ts_move.goto_previous_start, query = '@function.outer',    desc = 'Prev function start' },
+  { key = '[F', fn = ts_move.goto_previous_end,   query = '@function.outer',    desc = 'Prev function end' },
+  { key = ']c', fn = ts_move.goto_next_start,     query = '@class.outer',       desc = 'Next class start' },
+  { key = ']C', fn = ts_move.goto_next_end,       query = '@class.outer',       desc = 'Next class end' },
+  { key = '[c', fn = ts_move.goto_previous_start, query = '@class.outer',       desc = 'Prev class start' },
+  { key = '[C', fn = ts_move.goto_previous_end,   query = '@class.outer',       desc = 'Prev class end' },
+  { key = ']a', fn = ts_move.goto_next_start,     query = '@parameter.inner',   desc = 'Next parameter' },
+  { key = '[a', fn = ts_move.goto_previous_start, query = '@parameter.inner',   desc = 'Prev parameter' },
+  { key = ']i', fn = ts_move.goto_next_start,     query = '@conditional.outer', desc = 'Next conditional' },
+  { key = '[i', fn = ts_move.goto_previous_start, query = '@conditional.outer', desc = 'Prev conditional' },
+  { key = ']l', fn = ts_move.goto_next_start,     query = '@loop.outer',        desc = 'Next loop' },
+  { key = '[l', fn = ts_move.goto_previous_start, query = '@loop.outer',        desc = 'Prev loop' },
+}
+for _, m in ipairs(move_keymaps) do
+  vim.keymap.set('n', m.key, function()
+    m.fn(m.query, 'textobjects')
+  end, { desc = m.desc })
+end
+
 -- [[ mini.nvim ]]
 require('mini.ai').setup {
   n_lines = 500,
-  -- custom_textobjects = {
-  --   f = function()
-  --     return require('mini.ai').gen_spec.treesitter { a = '@function.outer', i = '@function.inner' }
-  --   end,
-  --   m = function()
-  --     return require('mini.ai').gen_spec.treesitter { a = '@method.outer', i = '@method.inner' }
-  --   end,
-  -- },
+  custom_textobjects = {
+    -- Functions / methods
+    f = require('mini.ai').gen_spec.treesitter { a = '@function.outer', i = '@function.inner' },
+    -- Classes / types
+    c = require('mini.ai').gen_spec.treesitter { a = '@class.outer', i = '@class.inner' },
+    -- Conditionals (if/else/switch)
+    o = require('mini.ai').gen_spec.treesitter {
+      a = { '@conditional.outer', '@loop.outer' },
+      i = { '@conditional.inner', '@loop.inner' },
+    },
+    -- Blocks (general)
+    B = require('mini.ai').gen_spec.treesitter { a = '@block.outer', i = '@block.inner' },
+    -- Parameters / arguments
+    a = require('mini.ai').gen_spec.treesitter { a = '@parameter.outer', i = '@parameter.inner' },
+    -- Return values
+    r = require('mini.ai').gen_spec.treesitter { a = '@return.outer', i = '@return.inner' },
+    -- Calls
+    x = require('mini.ai').gen_spec.treesitter { a = '@call.outer', i = '@call.inner' },
+  },
 }
 require('mini.surround').setup()
 require('mini.git').setup()
@@ -610,6 +661,8 @@ require 'custom.plugins.tabline'
 require 'custom.plugins.lualine'
 require 'custom.plugins.nvim-ts-autotag'
 require 'custom.plugins.nvim-navic'
+require 'custom.plugins.blink'
+require 'custom.plugins.auto-session'
 require 'custom.plugins.init'
 
 -- vim: ts=2 sts=2 sw=2 et

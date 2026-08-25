@@ -83,6 +83,14 @@ vim.keymap.set('n', '<leader>gd', function()
   end
 end, { desc = 'Toggle Git Diff View' })
 
+-- Also close diffview from within its own buffers
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'DiffviewFiles', 'DiffviewFileHistory' },
+  callback = function(ev)
+    vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewClose<cr>', { buffer = ev.buf, desc = 'Close Git Diff View' })
+  end,
+})
+
 -- [[ typescript-tools ]]
 require('typescript-tools').setup {
   on_attach = function(client, bufnr)
