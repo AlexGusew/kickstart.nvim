@@ -288,6 +288,9 @@ vim.pack.add {
   -- Completion
   { src = gh 'saghen/blink.cmp',                version = 'v1.10.2' },
 
+  -- Markdown
+  gh 'MeanderingProgrammer/render-markdown.nvim',
+
   -- Editor
   gh 'windwp/nvim-autopairs',
   gh 'lukas-reineke/indent-blankline.nvim',
@@ -307,10 +310,8 @@ vim.pack.add {
 -- :ThemeSync below exists to resync an already-open session by hand.
 
 local function apply_theme()
-  require('onedark').setup {
-    style = 'deep',
-    transparent = false,
-  }
+  vim.opt.background = 'dark'
+  require('onedark').setup { style = 'darker' }
   require('onedark').load()
 end
 
@@ -647,6 +648,12 @@ require('mini.surround').setup()
 require('mini.git').setup()
 require('mini.diff').setup()
 require('mini.icons').setup()
+
+-- [[ render-markdown ]]
+require('render-markdown').setup {
+  completions = { lsp = { enabled = true } },
+}
+vim.keymap.set('n', '<leader>tm', '<cmd>RenderMarkdown toggle<CR>', { desc = '[T]oggle [M]arkdown render' })
 
 -- [[ todo-comments ]]
 require('todo-comments').setup { signs = false }
