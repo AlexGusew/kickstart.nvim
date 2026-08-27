@@ -84,6 +84,9 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+-- Enable faster startup by caching compiled Lua modules
+vim.loader.enable()
+
 -- Disable unused providers to suppress checkhealth warnings
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider = 0
@@ -99,74 +102,79 @@ vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
--- See `:help vim.opt`
+-- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
 -- Make line numbers default
-vim.opt.number = true
-vim.opt.cmdheight = 1
+vim.o.number = true
+vim.o.cmdheight = 1
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
-vim.opt.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
-vim.opt.mouse = 'a'
+vim.o.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
-vim.opt.showmode = false
-vim.opt.expandtab = true
+vim.o.showmode = false
+vim.o.expandtab = true
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
 vim.schedule(function()
-  vim.opt.clipboard = 'unnamedplus'
+  vim.o.clipboard = 'unnamedplus'
 end)
 
 -- Enable break indent
-vim.opt.breakindent = true
+vim.o.breakindent = true
 
--- Save undo history
-vim.opt.undofile = true
+-- Enable undo/redo changes even after closing and reopening a file
+vim.o.undofile = true
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
+vim.o.ignorecase = true
+vim.o.smartcase = true
 
 -- Signs rendered inside line number column, avoids duplicate native signcolumn
-vim.opt.signcolumn = 'yes'
+vim.o.signcolumn = 'yes'
 
 -- Decrease update time
-vim.opt.updatetime = 250
+vim.o.updatetime = 250
 
 -- Decrease mapped sequence wait time
-vim.opt.timeoutlen = 300
+vim.o.timeoutlen = 300
 
 -- Configure how new splits should be opened
-vim.opt.splitright = true
-vim.opt.splitbelow = true
+vim.o.splitright = true
+vim.o.splitbelow = true
 
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-vim.opt.list = true
+--
+--  Notice listchars is set using `vim.opt` instead of `vim.o`.
+--  It is very similar to `vim.o` but offers an interface for conveniently interacting with tables.
+--   See `:help lua-options`
+--   and `:help lua-guide-options`
+vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
-vim.opt.inccommand = 'split'
+vim.o.inccommand = 'split'
 
 -- Show which line your cursor is on
-vim.opt.cursorline = true
+vim.o.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.o.scrolloff = 10
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
-vim.opt.confirm = true
+vim.o.confirm = true
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -212,12 +220,12 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
+--  See `:help vim.hl.on_yank()`
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
 })
 
@@ -227,9 +235,31 @@ require('vim._core.ui2').enable {}
 -- [[ Install plugins with vim.pack ]]
 --   :restart           — restart Neovim to pick up newly added plugins
 --   vim.pack.update()  — pull latest changes from all plugins
+--   :lua vim.pack.update(nil, { offline = true })  — inspect state without fetching
 local gh = function(x)
   return 'https://github.com/' .. x
 end
+
+-- Run build steps for plugins that need them after install/update.
+-- No plugin here needs an external build (blink.cmp uses the Lua fuzzy matcher),
+-- so this only keeps treesitter parsers in sync with the plugin.
+-- See `:help vim.pack-events`
+vim.api.nvim_create_autocmd('PackChanged', {
+  callback = function(ev)
+    local name = ev.data.spec.name
+    local kind = ev.data.kind
+    if kind ~= 'install' and kind ~= 'update' then
+      return
+    end
+
+    if name == 'nvim-treesitter' then
+      if not ev.data.active then
+        vim.cmd.packadd 'nvim-treesitter'
+      end
+      vim.cmd 'TSUpdate'
+    end
+  end,
+})
 
 vim.pack.add {
   -- Core
@@ -248,7 +278,6 @@ vim.pack.add {
   gh 'MunifTanjim/nui.nvim',
   gh 'nvim-lualine/lualine.nvim',
   gh 'kdheepak/tabline.nvim',
-  gh 'nvim-tree/nvim-web-devicons',
   gh 'folke/todo-comments.nvim',
   gh 'j-hui/fidget.nvim',
 
@@ -259,8 +288,8 @@ vim.pack.add {
   gh 'folke/trouble.nvim',
   gh 'folke/lazydev.nvim',
   gh 'neovim/nvim-lspconfig',
-  gh 'williamboman/mason.nvim',
-  gh 'williamboman/mason-lspconfig.nvim',
+  gh 'mason-org/mason.nvim',
+  gh 'mason-org/mason-lspconfig.nvim',
   gh 'WhoIsSethDaniel/mason-tool-installer.nvim',
 
   -- Formatting / Linting
@@ -272,7 +301,7 @@ vim.pack.add {
   gh 'nvim-treesitter/nvim-treesitter-textobjects',
 
   -- Mini collection
-  gh 'echasnovski/mini.nvim',
+  gh 'nvim-mini/mini.nvim',
 
   -- Debug
   gh 'mfussenegger/nvim-dap',
@@ -299,8 +328,6 @@ vim.pack.add {
 
   -- Winbar
   gh 'Bekaboo/dropbar.nvim',
-  gh 'nvim-telescope/telescope-fzf-native.nvim',
-  gh 'MunifTanjim/nui.nvim',
 }
 
 -- [[ Colorscheme ]]
@@ -358,9 +385,10 @@ require('which-key').setup {
     },
   },
   spec = {
-    { '<leader>s', group = '[S]earch' },
+    { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
     { '<leader>t', group = '[T]oggle' },
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+    { 'gr', group = 'LSP Actions', mode = { 'n' } },
   },
 }
 
@@ -385,6 +413,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
     map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
+
+    -- WARN: This is not Goto Definition, this is Goto Declaration.
+    --  For example, in C this would take you to the header.
+    map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
     -- Fix all clang-tidy warnings in the current file
     map('<leader>cf', function()
@@ -455,7 +487,17 @@ vim.diagnostic.config {
     end,
   },
   virtual_lines = false,
-  jump = { float = true },
+  -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
+  -- NOTE: `jump.float` is deprecated (removal in 0.14), use `jump.on_jump` instead.
+  jump = {
+    on_jump = function(_, bufnr)
+      vim.diagnostic.open_float {
+        bufnr = bufnr,
+        scope = 'cursor',
+        focus = false,
+      }
+    end,
+  },
 }
 
 -- [[ LSP servers ]]
@@ -476,7 +518,31 @@ local servers = {
     filetypes = { 'python' },
     root_markers = { 'pyproject.toml', 'ruff.toml', '.ruff.toml', '.git' },
   },
+  -- Special Lua Config, as recommended by neovim help docs
   lua_ls = {
+    on_init = function(client)
+      if client.workspace_folders then
+        local path = client.workspace_folders[1].name
+        if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then
+          return
+        end
+      end
+
+      local current_settings = client.config.settings --[[@as lspconfig.settings.lua_ls]]
+      client.config.settings.Lua = vim.tbl_deep_extend('force', current_settings.Lua, {
+        runtime = {
+          version = 'LuaJIT',
+          path = { 'lua/?.lua', 'lua/?/init.lua' },
+        },
+        workspace = {
+          checkThirdParty = false,
+          -- NOTE: this is a lot slower and will cause issues when working on your own configuration.
+          --  See https://github.com/neovim/nvim-lspconfig/issues/3189
+          library = vim.api.nvim_get_runtime_file('', true),
+        },
+      })
+    end,
+    ---@type lspconfig.settings.lua_ls
     settings = {
       Lua = {
         completion = { callSnippet = 'Replace' },
@@ -538,11 +604,19 @@ if #missing > 0 then
 end
 
 local function treesitter_try_attach(buf, language)
+  -- Check if a parser exists and load it
   if not vim.treesitter.language.add(language) then
     return
   end
+  -- Enable syntax highlighting and other treesitter features
   vim.treesitter.start(buf, language)
-  vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+
+  -- Check if treesitter indentation is available for this language, and if so enable it.
+  -- If there is no indent query, `indentexpr` falls back to Vim's built-in indentation.
+  local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
+  if has_indent_query then
+    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+  end
 end
 
 local available_parsers = require('nvim-treesitter').get_available()
@@ -648,6 +722,8 @@ require('mini.surround').setup()
 require('mini.git').setup()
 require('mini.diff').setup()
 require('mini.icons').setup()
+-- Used for backwards compatibility with plugins that require `nvim-web-devicons`
+MiniIcons.mock_nvim_web_devicons()
 
 -- [[ render-markdown ]]
 require('render-markdown').setup {
