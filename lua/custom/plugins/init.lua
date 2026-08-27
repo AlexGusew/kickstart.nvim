@@ -106,13 +106,16 @@ require('conform').setup {
     lua = { 'stylua' },
     c = { 'clang-format' },
     cpp = { 'clang-format' },
-    javascript = { 'prettier' },
-    typescript = { 'prettier' },
-    javascriptreact = { 'prettier' },
-    typescriptreact = { 'prettier' },
-    json = { 'prettier' },
-    markdown = { 'prettier' },
-    yaml = { 'prettier' },
+    javascript = { 'oxfmt' },
+    typescript = { 'oxfmt' },
+    javascriptreact = { 'oxfmt' },
+    typescriptreact = { 'oxfmt' },
+    json = { 'prettierd' },
+    -- markdown = { 'prettierd' },
+    yaml = { 'prettierd' },
+    css = { 'prettierd' },
+    scss = { 'prettierd' },
+    html = { 'prettierd' },
     python = {
       'ruff_fix', -- ruff check --fix (auto-fixable lint errors)
       'ruff_format', -- ruff format
@@ -123,10 +126,10 @@ require('conform').setup {
     return { timeout_ms = 500, lsp_format = 'fallback' }
   end,
   formatters = {
-    prettierd = {
-      condition = function()
-        return vim.uv.fs_realpath '.prettierrc.js' ~= nil or vim.uv.fs_realpath '.prettierrc.mjs' ~= nil or vim.uv.fs_realpath '.prettierrc' ~= nil
-      end,
+    oxfmt = {
+      command = 'oxfmt',
+      args = { '--stdin-filepath', '$FILENAME' },
+      stdin = true,
     },
   },
 }

@@ -21,9 +21,9 @@ require('snacks').setup {
   words = { enabled = true },
   picker = {
     enabled = true,
-    hidden = false,
+    hidden = true,
     ignored = false,
-    formatters = { file = { filename_first = true } },
+    -- formatters = { file = { filename_first = true } },
     layout = { preset = 'ivy' },
   },
 }
